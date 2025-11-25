@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>welcome:)</title> 
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%; 
+            background-color: white; /* Fondo blanco */
+            overflow: hidden; 
+        }
+
+        /* Texto estático central. Será el botón y el mensaje final. */
+        #center-message {
+            position: absolute;
+            font-size: 3em; 
+            padding: 20px;
+            cursor: pointer; 
+            color: black; 
+            z-index: 1000;
+            text-align: center;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.5s ease; /* Transición para que el cambio de tamaño sea suave */
+        }
+
+        #center-message:hover {
+            opacity: 0.8;
+        }
+        
+        /* Estilo para los textos animados que se arrastran */
+        .scrolling-text {
+            display: none; /* Inicialmente oculto */
+            position: absolute; 
+            font-size: 2em;
+            color: black;
+            opacity: 0.15; 
+            white-space: nowrap; 
+            pointer-events: none; 
+        }
+
+        .audio-player {
+            display: none; 
+        }
+    </style>
+</head>
+<body>
+
+    <div id="center-message" onclick="startExperience()">
+        我們將盡快到達
+    </div>
+    
+    <div class="audio-player">
+        <audio id="background-audio" src="Yung Fazo - BANG BANG.mp3" loop></audio>
+    </div>
+
+    <script>
+        const TEXTO_ANIMADO = "我們將盡快到達"; 
+        const MENSAJE_FINAL = "@yzyblackmarket"; 
+        const NUMERO_DE_TEXTOS = 100; 
+        const VELOCIDAD_MAX = 1.5; 
+
+        let textos = [];
+        let running = false;
+        
+        // --- FUNCIÓN DE INICIO AL HACER CLIC ---
+        function startExperience() {
+            var audio = document.getElementById('background-audio');
+            var centerMsg = document.getElementById('center-message');
+            
+            // 1. Iniciar Audio
+            audio.volume = 0.3;
+            audio.play()
+                .then(() => {
+                    // Audio OK. Ahora inicia Animación y Mensaje Final.
+                    
+                    // Inicia la animación si no está corriendo
+                    if (!running) {
+                        initializeTexts();
+                        running = true;
+                        animateTexts();
+                    }
+                    
+                    // 2. Cambia el texto central y su estilo
+                    centerMsg.textContent = MENSAJE_FINAL;
+                    centerMsg.style.cursor = 'default';
+                    centerMsg.style.fontSize = '5em'; // Lo hace más grande como mensaje final
+                })
+                .catch(error => {
+                    // Si el audio falla, inicia la animación y cambia el mensaje de todos modos
+                    if (!running) {
+                        initializeTexts();
+                        running = true;
+                        animateTexts();
+                    }
+                    centerMsg.textContent = MENSAJE_FINAL;
+                    centerMsg.style.cursor = 'default';
+                    centerMsg.style.fontSize = '5em';
+                    console.error("Fallo al iniciar el audio. Revise archivo.", error);
+                });
+        }
+        
+        // --- LÓGICA DE LA ANIMACIÓN ---
+        
+        function initializeTexts() {
+            for (let i = 0; i < NUMERO_DE_TEXTOS; i++) {
+                let div = document.createElement('div');
+                div.className = 'scrolling-text';
+                div.textContent = TEXTO_ANIMADO; 
+                div.style.display = 'block'; // Hace visibles los textos
+                document.body.appendChild(div);
+
+                textos.push({
+                    element: div,
+                    x: Math.random() * window.innerWidth,
+                    y: Math.random() * window.innerHeight,
+                    vx: (Math.random() - 0.5) * VELOCIDAD_MAX,
+                    vy: (Math.random() - 0.5) * VELOCIDAD_MAX
+                });
+            }
+        }
+        
+        function animateTexts() {
+            if (!running) return;
+
+            const W = window.innerWidth;
+            const H = window.innerHeight;
+
+            textos.forEach(t => {
+                t.x += t.vx;
+                t.y += t.vy;
+
+                // Reposicionamiento para loop infinito
+                if (t.x > W) t.x = -t.element.offsetWidth;
+                if (t.x < -t.element.offsetWidth) t.x = W;
+                if (t.y > H) t.y = -t.element.offsetHeight;
+                if (t.y < -t.element.offsetHeight) t.y = H;
+
+                t.element.style.transform = `translate(${t.x}px, ${t.y}px)`;
+            });
+
+            requestAnimationFrame(animateTexts);
+        }
+    </script>
+
+</body>
+</html>
